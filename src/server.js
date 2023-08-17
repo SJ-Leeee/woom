@@ -19,14 +19,19 @@ const sockets = [];
 // 여기서의 소켓은 브라우저와의 연결
 wss.on("connection", (socket) => {
   sockets.push(socket);
+  socket["nickname"] = "Anonymous";
   console.log(`conneted to Browser 현재 ${sockets.length}`);
   socket.on("close", () => console.log("연결끝"));
   socket.on("message", (message) => {
     // const translatedMessageData = JSON.parse(message);
     message = message.toString("utf-8");
     const msgObj = JSON.parse(message);
-    if (msgObj.type === "new_message") {
-      sockets.forEach((soc) => soc.send(msgObj.payload));
+    switch (msgObj.type) {
+      case "new_message":
+        sockets.forEach((soc) => soc.send(`${socket.nickname} : ${msgObj.payload}`));
+        break;
+      case "nickname":
+        socket["nickname"] = msgObj.payload;
     }
   });
 });
