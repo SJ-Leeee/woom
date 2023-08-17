@@ -15,6 +15,9 @@ const handleListen = () => console.log("http://localhost:3000을 열었습니다
 const server = http.createServer(app);
 const io = SocketIO(server);
 // http 와 ws를 동시에 실행
+io.on("connection", (socket) => {
+  console.log(socket);
+});
 
 server.listen(3000, handleListen);
 
