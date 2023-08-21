@@ -1,6 +1,7 @@
 import http from "http";
 import express from "express";
 import SocketIO from "socket.io";
+import { eventNames } from "process";
 
 const app = express();
 
@@ -16,7 +17,14 @@ const server = http.createServer(app);
 const io = SocketIO(server);
 // http 와 ws를 동시에 실행
 io.on("connection", (socket) => {
-  console.log(socket);
+  socket.onAny((event) => {
+    console.log(`socket Event : ${event}`);
+  });
+  socket.on("enter_room", (roomName, done) => {
+    socket.join(roomName);
+    done();
+    socket.to(roomName).emit("welcome");
+  });
 });
 
 server.listen(3000, handleListen);
