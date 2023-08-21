@@ -15,11 +15,29 @@ function addMessage(message) {
   ul.appendChild(li);
 }
 
+function handleMessageSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector("#msg input");
+  socket.emit("new_message", input.value, roomName, () => {
+    addMessage(`You: ${input.value}`);
+  });
+}
+
+function handleNicknameSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector("#name input");
+  socket.emit("nickname", input.value);
+}
+
 function showRoom() {
   welcome.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
+  const msg = room.querySelector("#msg");
+  const name = room.querySelector("#name");
+  msg.addEventListener("submit", handleMessageSubmit);
+  name.addEventListener("submit", handleNicknameSubmit);
 }
 
 function handleRoomSubmit(event) {
@@ -32,8 +50,28 @@ function handleRoomSubmit(event) {
 
 form.addEventListener("submit", handleRoomSubmit);
 
-socket.on("welcome", () => {
-  addMessage("somewon joined!!");
+socket.on("welcome", (user) => {
+  addMessage(`${user} joined!!`);
+});
+
+socket.on("bye", (user) => {
+  addMessage(`${user} left`);
+});
+
+socket.on("new_message", addMessage); // argument 를 조정해줄 필요가 없어서 이렇게 써도 된다
+
+socket.on("room_change", (rooms) => {
+  const roomList = welcome.querySelector("ul");
+  roomList.innerHTML = "";
+  if (rooms.lenth === 0) {
+    return;
+  }
+  console.log(rooms);
+  rooms.forEach((room) => {
+    const li = document.createElement("li");
+    li.innerText = room;
+    roomList.append(li);
+  });
 });
 
 // ws로 구현한것들
